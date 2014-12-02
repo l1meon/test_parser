@@ -22,12 +22,29 @@ def oriflame_parser product_code
   price = page.css('span.mainCurrency').text
   @ofile.puts(title, volume, bb, code , "\n", description, "\n", ingredients, "\n", htu ,"\n",price)
 
+
+  @image = page.css('li.ui-color-box')
+  @image.xpath(".//img/@src").each do |src|
+    uri = URI.join( url_page, src ).to_s # make absolute uri
+    File.open("#{@data_dir}/#{title}/#{File.basename(uri)}",'wb'){ |f| f.write(open(uri).read) }
+  end
   Nokogiri::HTML(open(url_page)).xpath("//img[@class='image figure']/@src").each do |src|
     uri = URI.join( url_page, src ).to_s # make absolute uri
-    File.open("#{@data_dir}/#{title}/#{title}",'wb'){ |f| f.write(open(uri).read) }
+    File.open("#{@data_dir}/#{title}/#{File.basename(uri)}",'wb'){ |f| f.write(open(uri).read) }
+  end
+  @ul_images = page.css('ul.variants')
+  begin
+    @ul_images.xpath(".//li/@data-srcset").each do |src|
+      puts "Fetching images..."
+      uri = URI.join( url_page, src ).to_s # make absolute uri
+      File.open("#{@data_dir}/#{title}/#{File.basename(uri)}",'wb'){ |f| f.write(open(uri).read) }
+      puts "File saved to #{@data_dir}/#{title}"
+    end
   end
 end
 
 
-inp = $stdin.gets.chomp
-oriflame_parser(inp)
+puts "Introduceti codu:"
+cod = $stdin.gets.chomp
+oriflame_parser(cod)
+
